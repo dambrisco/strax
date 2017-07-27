@@ -74,10 +74,7 @@ commands.addCommand('imnot', (message, args) => {
   return success;
 }, 'Remove a self-assignable role');
 
-commands.addCommand('raid', (message, [species, time, ...location]) => {
-  var speciesRole =
-    message.guild.roles.find(r => r.name.toLowerCase().startsWith(species)) ||
-    species;
+commands.addCommand('map', (message, location) => {
   var urlLocation = location.join('+');
   var map = 'https://www.google.com/maps?q=' + urlLocation;
   var image = 'https://maps.googleapis.com/maps/api/staticmap' +
@@ -96,14 +93,6 @@ commands.addCommand('raid', (message, [species, time, ...location]) => {
       },
       fields: [
         {
-          name: 'Species',
-          value: speciesRole.toString()
-        },
-        {
-          name: 'Time',
-          value: time
-        },
-        {
           name: 'Location',
           value: map
         }
@@ -112,8 +101,7 @@ commands.addCommand('raid', (message, [species, time, ...location]) => {
   };
   message.channel.send(embed);
   return true;
-}, 'Create a raid listing - ' +
-  ' requires format `.raid <species> <time> <location>`');
+}, 'Provides a static map image and google maps link for the given location');
 
 client.on('message', message => {
   parser.parse(message).then(command => {
