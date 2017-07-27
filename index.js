@@ -9,6 +9,10 @@ client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`);
 });
 
+client.on('guildMemberAdd', member => {
+  console.log(member.user.username + ' joined ' + member.guild.name + '!');
+});
+
 client.on('message', msg => {
   parser.parse(msg.content).then(command => {
     var maxRole = client.guilds.get(msg.guild.id).me.roles
