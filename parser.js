@@ -1,6 +1,6 @@
-function parse(leader, command) {
+function parse(leader, message) {
+  var command = message.content.trim();
   var raw = command;
-  command = command.trim();
   if (!command.startsWith(leader)) {
     return Promise.reject(new Error('Not a command'));
   } else {
@@ -14,7 +14,8 @@ function parse(leader, command) {
     return Promise.resolve({
       operation: operation,
       args: args,
-      raw: raw
+      raw: raw,
+      message: message
     });
   }
 }

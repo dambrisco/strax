@@ -4,6 +4,7 @@ const client = new Discord.Client();
 const parser = require('./parser')(process.env.LEADER);
 const filter = new RegExp(process.env.EXCLUDE_ROLES);
 const timeout = require('./timeout');
+const commands = require('./commands')();
 
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`);
@@ -13,49 +14,55 @@ client.on('guildMemberAdd', member => {
   console.log(member.user.username + ' joined ' + member.guild.name + '!');
 });
 
-client.on('message', msg => {
-  parser.parse(msg.content).then(command => {
-    var maxRole = client.guilds.get(msg.guild.id).me.roles
-      .reduce((max, role) =>
-        role.position > max.position ? role : max, { position: -1 });
-    var roles = getSelfAssignableRoles(msg.guild.roles, maxRole);
-    var success = false, role = null;
-    if (command.operation === 'roles') {
-      msg.author.send({
-        embed: {
-          color: 0x074877,
-          title: msg.guild.name + ' Roles',
-          description:
-            'These roles can be self-assigned using `.im` and `.imnot`',
-          fields: [
-            {
-              name: 'Self-assignable Roles',
-              value: roles.map(r => '- ' + r.name).join('\n') ||
-                '*No roles available*'
-            }
-          ]
+commands.addCommand('roles', (message) => {
+  var roles = getSelfAssignableRoles(message);
+  message.author.send({
+    embed: {
+      color: 0x074877,
+      title: message.guild.name + ' Roles',
+      description:
+        'These roles can be self-assigned using `.im` and `.imnot`',
+      fields: [
+        {
+          name: 'Self-assignable Roles',
+          value: roles.map(r => '- ' + r.name).join('\n') ||
+            '*No roles available*'
         }
-      });
-      success = true;
-    } else if (command.operation === 'im') {
-      [success, role] =
-        addRole(msg.member, roles, command.args.join(' ').toLowerCase());
-      if (success) {
-        msg.author.send('You\'ve been granted the `' + role.name + '` role!');
-      } else {
-        msg.author.send('You couldn\'t be granted that role for some reason' +
-          ' - check your spelling and make sure it\'s listed under `.roles`.');
-      }
-    } else if (command.operation === 'imnot') {
-      [success, role] =
-        removeRole(msg.member, roles, command.args.join(' ').toLowerCase());
-      if (success) {
-        msg.author.send('You\'ve removed the `' + role.name + '` role!');
-      } else {
-        msg.author.send('That role couldn\'t be removed from you' +
-          ' - check your spellling and make sure it\'s listed under `.roles`.');
-      }
+      ]
     }
+  });
+  return true;
+});
+
+commands.addCommand('im', (message, args) => {
+  var roles = getSelfAssignableRoles(message);
+  var [success, role] =
+    addRole(message.member, roles, args.join(' ').toLowerCase());
+  if (success) {
+    message.author.send('You\'ve been granted the `' + role.name + '` role!');
+  } else {
+    message.author.send('You couldn\'t be granted that role for some reason' +
+      ' - check your spelling and make sure it\'s listed under `.roles`.');
+  }
+  return success;
+});
+
+commands.addCommand('imnot', (message, args) => {
+  var roles = getSelfAssignableRoles(message);
+  var [success, role] =
+    removeRole(message.member, roles, args.join(' ').toLowerCase());
+  if (success) {
+    message.author.send('You\'ve removed the `' + role.name + '` role!');
+  } else {
+    message.author.send('That role couldn\'t be removed from you' +
+      ' - check your spellling and make sure it\'s listed under `.roles`.');
+  }
+  return success;
+});
+
+client.on('message', msg => {
+  parser.parse(msg).then(command => {
+    var success = commands.runCommand(command);
     console.dir(command);
     if (success) {
       msg.react('👍');
@@ -67,8 +74,11 @@ client.on('message', msg => {
   });
 });
 
-function getSelfAssignableRoles(roles, maxRole) {
-  return roles.map(r => r)
+function getSelfAssignableRoles(message) {
+  var maxRole = client.guilds.get(message.guild.id).me.roles
+    .reduce((max, role) =>
+      role.position > max.position ? role : max, { position: -1 });
+  return message.guild.roles.map(r => r)
     .filter(r =>
       maxRole.position > r.position &&
       !filter.test(r.name) &&
