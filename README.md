@@ -1,5 +1,6 @@
 # Strax
 
+A helpful, if occasionally dense, little Discord bot.
 
 ## Installation
 
