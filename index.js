@@ -5,6 +5,7 @@ const parser = require('./parser')(process.env.LEADER);
 const filter = new RegExp(process.env.EXCLUDE_ROLES);
 const timeout = require('./timeout');
 const commands = require('./commands')();
+const embedColor = 0x074877;
 
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`);
@@ -14,11 +15,24 @@ client.on('guildMemberAdd', member => {
   console.log(member.user.username + ' joined ' + member.guild.name + '!');
 });
 
+commands.addCommand('help', (message) => {
+  var help = commands.getHelpText(process.env.LEADER);
+  help = help.split('<leader>').join(process.env.LEADER);
+  message.author.send({
+    embed: {
+      color: embedColor,
+      title: 'Available Commands',
+      description: help
+    }
+  });
+  return true;
+}, 'Display this text');
+
 commands.addCommand('roles', (message) => {
   var roles = getSelfAssignableRoles(message);
   message.author.send({
     embed: {
-      color: 0x074877,
+      color: embedColor,
       title: message.guild.name + ' Roles',
       description:
         'These roles can be self-assigned using `.im` and `.imnot`',
@@ -32,7 +46,7 @@ commands.addCommand('roles', (message) => {
     }
   });
   return true;
-});
+}, 'List all self-assignable roles');
 
 commands.addCommand('im', (message, args) => {
   var roles = getSelfAssignableRoles(message);
@@ -45,7 +59,7 @@ commands.addCommand('im', (message, args) => {
       ' - check your spelling and make sure it\'s listed under `.roles`.');
   }
   return success;
-});
+}, 'Grant a self-assignable role');
 
 commands.addCommand('imnot', (message, args) => {
   var roles = getSelfAssignableRoles(message);
@@ -58,18 +72,60 @@ commands.addCommand('imnot', (message, args) => {
       ' - check your spellling and make sure it\'s listed under `.roles`.');
   }
   return success;
-});
+}, 'Remove a self-assignable role');
 
-client.on('message', msg => {
-  parser.parse(msg).then(command => {
-    var success = commands.runCommand(command);
-    console.dir(command);
-    if (success) {
-      msg.react('👍');
-    } else {
-      msg.react('👎');
+commands.addCommand('raid', (message, [species, time, ...location]) => {
+  var speciesRole =
+    message.guild.roles.find(r => r.name.toLowerCase().startsWith(species)) ||
+    species;
+  var urlLocation = location.join('+');
+  var map = 'https://www.google.com/maps?q=' + urlLocation;
+  var image = 'https://maps.googleapis.com/maps/api/staticmap' +
+    '?zoom=14&size=500x300&maptype=roadmap&center=' + urlLocation +
+    '&markers=color:red%7C' + urlLocation +
+    '&key=' + process.env.GOOGLE_API_TOKEN;
+  var embed = {
+    embed: {
+      color: embedColor,
+      author: {
+        name: message.member.displayName,
+        icon_url: message.author.avatarURL
+      },
+      image: {
+        url: image
+      },
+      fields: [
+        {
+          name: 'Species',
+          value: speciesRole.toString()
+        },
+        {
+          name: 'Time',
+          value: time
+        },
+        {
+          name: 'Location',
+          value: map
+        }
+      ]
     }
-    timeout(3000).then(() => msg.delete());
+  };
+  message.channel.send(embed);
+  return true;
+}, 'Create a raid listing - ' +
+  ' requires format `.raid <species> <time> <location>`');
+
+client.on('message', message => {
+  parser.parse(message).then(command => {
+    var success = commands.runCommand(command);
+    if (success) {
+      message.react('👍');
+    } else {
+      message.react('👎');
+    }
+    if (message.deletable) {
+      timeout(3000).then(() => message.delete());
+    }
   }).catch(() => {
   });
 });
