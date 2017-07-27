@@ -36,11 +36,21 @@ client.on('message', msg => {
     } else if (command.operation === 'im') {
       [success, role] =
         addRole(msg.member, roles, command.args.join(' ').toLowerCase());
-      msg.author.send('You\'ve been granted the `' + role.name + '` role!');
+      if (success) {
+        msg.author.send('You\'ve been granted the `' + role.name + '` role!');
+      } else {
+        msg.author.send('You couldn\'t be granted that role for some reason' +
+          ' - check your spelling and make sure it\'s listed under `.roles`.');
+      }
     } else if (command.operation === 'imnot') {
       [success, role] =
         removeRole(msg.member, roles, command.args.join(' ').toLowerCase());
-      msg.author.send('You\'ve removed the `' + role.name + '` role!');
+      if (success) {
+        msg.author.send('You\'ve removed the `' + role.name + '` role!');
+      } else {
+        msg.author.send('That role couldn\'t be removed from you' +
+          ' - check your spellling and make sure it\'s listed under `.roles`.');
+      }
     }
     console.dir(command);
     if (success) {
