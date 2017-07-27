@@ -13,6 +13,11 @@ client.on('ready', () => {
 
 client.on('guildMemberAdd', member => {
   console.log(member.user.username + ' joined ' + member.guild.name + '!');
+  member.user.send(
+    `Hey ${member.displayName}! Welcome to ${member.guild.name}!` +
+    ' I\'m a bot primarily used for managing roles - you can see which ones' +
+    ' are available by using `.roles`.' +
+    '\nTo see everything I can do, use `.help`.');
 });
 
 commands.addCommand('help', (message) => {
