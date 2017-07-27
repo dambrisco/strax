@@ -26,7 +26,8 @@ client.on('message', msg => {
           fields: [
             {
               name: 'Self-assignable Roles',
-              value: roles.map(r => '- ' + r.name).join('\n')
+              value: roles.map(r => '- ' + r.name).join('\n') ||
+                '*No roles available*'
             }
           ]
         }
