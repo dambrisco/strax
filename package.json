@@ -1,0 +1,34 @@
+{
+  "name": "tyranibot",
+  "version": "1.0.0",
+  "description": "Pretty niche discord bot",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/dambrisco/tyranibot.git"
+  },
+  "keywords": [
+    "discord"
+  ],
+  "author": "dambrisco",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/dambrisco/tyranibot/issues"
+  },
+  "homepage": "https://github.com/dambrisco/tyranibot#readme",
+  "dependencies": {
+    "bufferutil": "^3.0.2",
+    "discord.js": "^11.1.0",
+    "dotenv": "^4.0.0",
+    "erlpack": "github:hammerandchisel/erlpack",
+    "libsodium-wrappers": "^0.5.2",
+    "node-opus": "^0.2.6",
+    "opusscript": "0.0.3",
+    "sodium": "^2.0.1",
+    "uws": "^0.14.5"
+  }
+}
