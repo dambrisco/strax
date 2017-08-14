@@ -52,7 +52,7 @@ commands.addCommand('roles', (message) => {
   return true;
 }, 'List all self-assignable roles');
 
-commands.addCommand('im', (message, args) => {
+commands.addCommand('role', (message, args) => {
   var roles = getSelfAssignableRoles(message);
   var [success, role] =
     addRole(message.member, roles, args.join(' ').toLowerCase());
@@ -63,9 +63,9 @@ commands.addCommand('im', (message, args) => {
       ' - check your spelling and make sure it\'s listed under `.roles`.');
   }
   return success;
-}, 'Grant a self-assignable role');
+}, 'Grant a self-assignable role', ['im', 'iam']);
 
-commands.addCommand('imnot', (message, args) => {
+commands.addCommand('derole', (message, args) => {
   var roles = getSelfAssignableRoles(message);
   var [success, role] =
     removeRole(message.member, roles, args.join(' ').toLowerCase());
@@ -76,7 +76,7 @@ commands.addCommand('imnot', (message, args) => {
       ' - check your spellling and make sure it\'s listed under `.roles`.');
   }
   return success;
-}, 'Remove a self-assignable role');
+}, 'Remove a self-assignable role', ['imnot', 'iamnot']);
 
 commands.addCommand('map', (message, location) => {
   var urlLocation = location.join('+');
@@ -114,6 +114,8 @@ client.on('message', message => {
       message.react('👍');
     } else {
       message.react('👎');
+      message.author.send('That command wasn\'t recognized or couldn\'t be' +
+        ' parsed. Please use `.help` to see available commands and arguments');
     }
     if (message.deletable) {
       timeout(3000).then(() => message.delete());
